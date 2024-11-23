@@ -6,6 +6,7 @@ import { CfnOutput } from "aws-cdk-lib";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { FilterCriteria, Runtime, StartingPosition } from "aws-cdk-lib/aws-lambda";
 import { LambdaIntegration, RestApi } from "aws-cdk-lib/aws-apigateway";
+import { DynamoEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 
 export class CdkStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -38,9 +39,35 @@ export class CdkStack extends cdk.Stack {
             },
         });
 
+        // Cleanup Lambda
+        const cleanupFunction = new NodejsFunction(this, "cleanupFunction", {
+            runtime: Runtime.NODEJS_20_X,
+            handler: "handler",
+            entry: `${__dirname}/../src/cleanupFunction.ts`,
+            environment: {
+                TABLE_NAME: errorTable.tableName,
+                TOPIC_ARN: errorTopic.topicArn,
+            },
+        });
+
         // Grant permissions
         errorTable.grantReadWriteData(processFunction);
         errorTopic.grantPublish(processFunction);
+        errorTable.grantReadWriteData(cleanupFunction);
+        errorTopic.grantPublish(cleanupFunction);
+
+        // Add DynamoDB Event Source
+        cleanupFunction.addEventSource(
+            new DynamoEventSource(errorTable, {
+                startingPosition: StartingPosition.LATEST,
+                batchSize: 5,
+                filters: [
+                    FilterCriteria.filter({
+                        eventName: { eq: ["REMOVE"] },
+                    }),
+                ],
+            })
+        );
 
         // API Gateway
         const api = new RestApi(this, "ProcessorApi");
