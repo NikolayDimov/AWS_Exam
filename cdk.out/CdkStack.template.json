@@ -1,0 +1,883 @@
+{
+ "Resources": {
+  "ErrorTableA27F7F12": {
+   "Type": "AWS::DynamoDB::Table",
+   "Properties": {
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "id",
+      "AttributeType": "S"
+     }
+    ],
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [
+     {
+      "AttributeName": "id",
+      "KeyType": "HASH"
+     }
+    ],
+    "StreamSpecification": {
+     "StreamViewType": "NEW_AND_OLD_IMAGES"
+    },
+    "TimeToLiveSpecification": {
+     "AttributeName": "ttl",
+     "Enabled": true
+    }
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "CdkStack/ErrorTable/Resource"
+   }
+  },
+  "ErrorTopicA0904A23": {
+   "Type": "AWS::SNS::Topic",
+   "Properties": {
+    "TopicName": "ErrorTopic"
+   },
+   "Metadata": {
+    "aws:cdk:path": "CdkStack/ErrorTopic/Resource"
+   }
+  },
+  "processFunctionServiceRole043D3FAD": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "CdkStack/processFunction/ServiceRole/Resource"
+   }
+  },
+  "processFunctionServiceRoleDefaultPolicyE4A30A49": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable",
+        "dynamodb:GetItem",
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator",
+        "dynamodb:PutItem",
+        "dynamodb:Query",
+        "dynamodb:Scan",
+        "dynamodb:UpdateItem"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "ErrorTableA27F7F12",
+          "Arn"
+         ]
+        },
+        {
+         "Ref": "AWS::NoValue"
+        }
+       ]
+      },
+      {
+       "Action": "sns:Publish",
+       "Effect": "Allow",
+       "Resource": {
+        "Ref": "ErrorTopicA0904A23"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "processFunctionServiceRoleDefaultPolicyE4A30A49",
+    "Roles": [
+     {
+      "Ref": "processFunctionServiceRole043D3FAD"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "CdkStack/processFunction/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "processFunction0BCCD85F": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     },
+     "S3Key": "7ae4bbd9eab553ca4b5839039fdef6400c3d8608e8ca9b8343c3810c0ab4c990.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "TABLE_NAME": {
+       "Ref": "ErrorTableA27F7F12"
+      },
+      "TOPIC_ARN": {
+       "Ref": "ErrorTopicA0904A23"
+      }
+     }
+    },
+    "Handler": "index.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "processFunctionServiceRole043D3FAD",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs20.x"
+   },
+   "DependsOn": [
+    "processFunctionServiceRoleDefaultPolicyE4A30A49",
+    "processFunctionServiceRole043D3FAD"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "CdkStack/processFunction/Resource",
+    "aws:asset:path": "asset.7ae4bbd9eab553ca4b5839039fdef6400c3d8608e8ca9b8343c3810c0ab4c990",
+    "aws:asset:is-bundled": true,
+    "aws:asset:property": "Code"
+   }
+  },
+  "cleanupFunctionServiceRoleF2D5398B": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "CdkStack/cleanupFunction/ServiceRole/Resource"
+   }
+  },
+  "cleanupFunctionServiceRoleDefaultPolicy8DA0A82F": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable",
+        "dynamodb:GetItem",
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator",
+        "dynamodb:PutItem",
+        "dynamodb:Query",
+        "dynamodb:Scan",
+        "dynamodb:UpdateItem"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "ErrorTableA27F7F12",
+          "Arn"
+         ]
+        },
+        {
+         "Ref": "AWS::NoValue"
+        }
+       ]
+      },
+      {
+       "Action": "sns:Publish",
+       "Effect": "Allow",
+       "Resource": {
+        "Ref": "ErrorTopicA0904A23"
+       }
+      },
+      {
+       "Action": "dynamodb:ListStreams",
+       "Effect": "Allow",
+       "Resource": "*"
+      },
+      {
+       "Action": [
+        "dynamodb:DescribeStream",
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "ErrorTableA27F7F12",
+         "StreamArn"
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "cleanupFunctionServiceRoleDefaultPolicy8DA0A82F",
+    "Roles": [
+     {
+      "Ref": "cleanupFunctionServiceRoleF2D5398B"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "CdkStack/cleanupFunction/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "cleanupFunction808DE61E": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+     },
+     "S3Key": "8c605b9377263dd209cbca8ead7589d9a1ac1075298eecb336e0505174045544.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "TABLE_NAME": {
+       "Ref": "ErrorTableA27F7F12"
+      },
+      "TOPIC_ARN": {
+       "Ref": "ErrorTopicA0904A23"
+      }
+     }
+    },
+    "Handler": "index.handler",
+    "Role": {
+     "Fn::GetAtt": [
+      "cleanupFunctionServiceRoleF2D5398B",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs20.x"
+   },
+   "DependsOn": [
+    "cleanupFunctionServiceRoleDefaultPolicy8DA0A82F",
+    "cleanupFunctionServiceRoleF2D5398B"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "CdkStack/cleanupFunction/Resource",
+    "aws:asset:path": "asset.8c605b9377263dd209cbca8ead7589d9a1ac1075298eecb336e0505174045544",
+    "aws:asset:is-bundled": true,
+    "aws:asset:property": "Code"
+   }
+  },
+  "cleanupFunctionDynamoDBEventSourceCdkStackErrorTable7AB3E2C9BB763521": {
+   "Type": "AWS::Lambda::EventSourceMapping",
+   "Properties": {
+    "BatchSize": 5,
+    "EventSourceArn": {
+     "Fn::GetAtt": [
+      "ErrorTableA27F7F12",
+      "StreamArn"
+     ]
+    },
+    "FilterCriteria": {
+     "Filters": [
+      {
+       "Pattern": "{\"eventName\":{\"eq\":[\"REMOVE\"]}}"
+      }
+     ]
+    },
+    "FunctionName": {
+     "Ref": "cleanupFunction808DE61E"
+    },
+    "StartingPosition": "LATEST"
+   },
+   "Metadata": {
+    "aws:cdk:path": "CdkStack/cleanupFunction/DynamoDBEventSource:CdkStackErrorTable7AB3E2C9/Resource"
+   }
+  },
+  "ProcessorApiEE88D53F": {
+   "Type": "AWS::ApiGateway::RestApi",
+   "Properties": {
+    "Name": "ProcessorApi"
+   },
+   "Metadata": {
+    "aws:cdk:path": "CdkStack/ProcessorApi/Resource"
+   }
+  },
+  "ProcessorApiDeploymentE2352F46e2a0faddf0b834cf7e265efa3dec8349": {
+   "Type": "AWS::ApiGateway::Deployment",
+   "Properties": {
+    "Description": "Automatically created by the RestApi construct",
+    "RestApiId": {
+     "Ref": "ProcessorApiEE88D53F"
+    }
+   },
+   "DependsOn": [
+    "ProcessorApiprocessJSONPOST621223AA",
+    "ProcessorApiprocessJSONEB11BF11"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "CdkStack/ProcessorApi/Deployment/Resource"
+   }
+  },
+  "ProcessorApiDeploymentStageprod67007E1E": {
+   "Type": "AWS::ApiGateway::Stage",
+   "Properties": {
+    "DeploymentId": {
+     "Ref": "ProcessorApiDeploymentE2352F46e2a0faddf0b834cf7e265efa3dec8349"
+    },
+    "RestApiId": {
+     "Ref": "ProcessorApiEE88D53F"
+    },
+    "StageName": "prod"
+   },
+   "Metadata": {
+    "aws:cdk:path": "CdkStack/ProcessorApi/DeploymentStage.prod/Resource"
+   }
+  },
+  "ProcessorApiprocessJSONEB11BF11": {
+   "Type": "AWS::ApiGateway::Resource",
+   "Properties": {
+    "ParentId": {
+     "Fn::GetAtt": [
+      "ProcessorApiEE88D53F",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "processJSON",
+    "RestApiId": {
+     "Ref": "ProcessorApiEE88D53F"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "CdkStack/ProcessorApi/Default/processJSON/Resource"
+   }
+  },
+  "ProcessorApiprocessJSONPOSTApiPermissionCdkStackProcessorApi93A185C3POSTprocessJSON8F8191A8": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "processFunction0BCCD85F",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "ProcessorApiEE88D53F"
+       },
+       "/",
+       {
+        "Ref": "ProcessorApiDeploymentStageprod67007E1E"
+       },
+       "/POST/processJSON"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "CdkStack/ProcessorApi/Default/processJSON/POST/ApiPermission.CdkStackProcessorApi93A185C3.POST..processJSON"
+   }
+  },
+  "ProcessorApiprocessJSONPOSTApiPermissionTestCdkStackProcessorApi93A185C3POSTprocessJSON2897CF09": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "processFunction0BCCD85F",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:",
+       {
+        "Ref": "AWS::Region"
+       },
+       ":",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "ProcessorApiEE88D53F"
+       },
+       "/test-invoke-stage/POST/processJSON"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "CdkStack/ProcessorApi/Default/processJSON/POST/ApiPermission.Test.CdkStackProcessorApi93A185C3.POST..processJSON"
+   }
+  },
+  "ProcessorApiprocessJSONPOST621223AA": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "POST",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:",
+        {
+         "Ref": "AWS::Region"
+        },
+        ":lambda:path/2015-03-31/functions/",
+        {
+         "Fn::GetAtt": [
+          "processFunction0BCCD85F",
+          "Arn"
+         ]
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "ProcessorApiprocessJSONEB11BF11"
+    },
+    "RestApiId": {
+     "Ref": "ProcessorApiEE88D53F"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "CdkStack/ProcessorApi/Default/processJSON/POST/Resource"
+   }
+  },
+  "ErrorSubscription9DAFDAFE": {
+   "Type": "AWS::SNS::Subscription",
+   "Properties": {
+    "Endpoint": "atclient115@gmail.com",
+    "Protocol": "email",
+    "TopicArn": {
+     "Ref": "ErrorTopicA0904A23"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "CdkStack/ErrorSubscription/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/21QTW/CMAz9LdyLx+Aw7QjddmNDLXfkJoYF2iSqE1AV9b9PSbqNSTu9DyXPz17C49MCFjO88VzIy7xVDYTaobgUeONDkIPGzsgGwh6bloryqBMZC9YMYW+sEslMpPYNi15Zp4yO7r0eixa7RuJBG0lnhvcEb16L9FphB6EyeUTCnWmVGKLMbCx4dUBmcgzrCAWvYOPFhdwGmaZ4COVR/6S+Xkm72vhe0BatVfoU8/53d9R3ijlVRatO6OiGA4SK2K2tSr0m+kK2NUNH2kX3TtUOT2mDTCriNCX1+xZTUOZbcp9GRiuzcfx9l5aMQVPBD++sd3++l0ddGi1VPnC8LJz54bpcwjMsZmdWat577VRHUGX8AmCK+QTxAQAA"
+   },
+   "Metadata": {
+    "aws:cdk:path": "CdkStack/CDKMetadata/Default"
+   },
+   "Condition": "CDKMetadataAvailable"
+  }
+ },
+ "Outputs": {
+  "ProcessorApiEndpoint204FEF6F": {
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      "https://",
+      {
+       "Ref": "ProcessorApiEE88D53F"
+      },
+      ".execute-api.",
+      {
+       "Ref": "AWS::Region"
+      },
+      ".",
+      {
+       "Ref": "AWS::URLSuffix"
+      },
+      "/",
+      {
+       "Ref": "ProcessorApiDeploymentStageprod67007E1E"
+      },
+      "/"
+     ]
+    ]
+   }
+  },
+  "TopicArn": {
+   "Value": {
+    "Ref": "ErrorTopicA0904A23"
+   }
+  }
+ },
+ "Conditions": {
+  "CDKMetadataAvailable": {
+   "Fn::Or": [
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "af-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-northeast-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-south-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-3"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ap-southeast-4"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "ca-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "cn-northwest-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-central-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-north-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-south-2"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Or": [
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "eu-west-3"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "il-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-central-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "me-south-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "sa-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-1"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-east-2"
+       ]
+      },
+      {
+       "Fn::Equals": [
+        {
+         "Ref": "AWS::Region"
+        },
+        "us-west-1"
+       ]
+      }
+     ]
+    },
+    {
+     "Fn::Equals": [
+      {
+       "Ref": "AWS::Region"
+      },
+      "us-west-2"
+     ]
+    }
+   ]
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}
