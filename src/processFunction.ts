@@ -43,4 +43,9 @@ export const handler = async (event: any) => {
         await snsClient.send(new PublishCommand(snsParams));
         console.log("Notification sent!");
     }
+
+    return {
+        statusCode: 200,
+        body: "Hi from Lambda",
+    };
 };

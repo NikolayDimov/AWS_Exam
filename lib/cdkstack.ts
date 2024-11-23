@@ -85,5 +85,10 @@ export class CdkStack extends cdk.Stack {
         new CfnOutput(this, "TopicArn", {
             value: errorTopic.topicArn,
         });
+
+        // REST API output endpoint
+        new CfnOutput(this, "RESTApiEndpoint", {
+            value: `https://${api.restApiId}.execute-api.eu-center-1.amazonaws.com/prod/processJSON`,
+        });
     }
 }

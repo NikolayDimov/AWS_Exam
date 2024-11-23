@@ -249,7 +249,7 @@
                       "s3Bucket": {
                         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
                       },
-                      "s3Key": "98b3aff130f523c61f0a699339693a4a8c7389431e96ce8c50a8575986173c71.zip"
+                      "s3Key": "9a8ba95031b24d17fd993661376aad01d2c41099d0bcf5908578c260ab5248a0.zip"
                     },
                     "environment": {
                       "variables": {
@@ -856,6 +856,14 @@
           "TopicArn": {
             "id": "TopicArn",
             "path": "CdkStack/TopicArn",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.170.0"
+            }
+          },
+          "RESTApiEndpoint": {
+            "id": "RESTApiEndpoint",
+            "path": "CdkStack/RESTApiEndpoint",
             "constructInfo": {
               "fqn": "aws-cdk-lib.CfnOutput",
               "version": "2.170.0"
