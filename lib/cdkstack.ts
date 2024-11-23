@@ -1,13 +1,14 @@
 import * as cdk from "aws-cdk-lib";
-import { CfnOutput } from "aws-cdk-lib";
-import { AttributeType, BillingMode, StreamViewType, Table } from "aws-cdk-lib/aws-dynamodb";
 import { Construct } from "constructs";
+import { Subscription, SubscriptionProtocol, Topic } from "aws-cdk-lib/aws-sns";
+import { AttributeType, BillingMode, StreamViewType, Table } from "aws-cdk-lib/aws-dynamodb";
+import { CfnOutput } from "aws-cdk-lib";
 
 export class CdkStack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
 
-        // DynamoDB Table
+        // DynamoDB Table (added earlier)
         const errorTable = new Table(this, "ErrorTable", {
             partitionKey: {
                 name: "id",
@@ -18,9 +19,21 @@ export class CdkStack extends cdk.Stack {
             stream: StreamViewType.NEW_AND_OLD_IMAGES,
         });
 
-        // REST API output placeholder
-        new CfnOutput(this, "TableName", {
-            value: errorTable.tableName,
+        // SNS Topic
+        const errorTopic = new Topic(this, "ErrorTopic", {
+            topicName: "ErrorTopic",
+        });
+
+        // Email Subscription
+        new Subscription(this, "ErrorSubscription", {
+            topic: errorTopic,
+            protocol: SubscriptionProtocol.EMAIL,
+            endpoint: "atclient115@gmail.com",
+        });
+
+        // Outputs
+        new CfnOutput(this, "TopicArn", {
+            value: errorTopic.topicArn,
         });
     }
 }
