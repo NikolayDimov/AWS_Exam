@@ -37,7 +37,7 @@ jobs:
 
       # Bootstrap the AWS CDK (if necessary)
       - name: Bootstrap CDK Environment
-        run: npx cdk bootstrap aws://$AWS_ACCOUNT_ID/us-east-1
+        run: npx cdk bootstrap aws://$AWS_ACCOUNT_ID/us-central-1
 
       # Synthesize the CloudFormation template
       - name: Synthesize CDK Template
