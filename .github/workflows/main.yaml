@@ -1,0 +1,93 @@
+name: GitHub Action Main Branch
+run-name: "${{ github.actor }} performed ${{ github.event_name }} on ${{ github.head_ref || github.ref_name }}"
+
+on:
+  push:
+    branches:
+      - main  # Trigger on push to the main branch
+  pull_request:
+    branches:
+      - main  # Trigger on pull requests to the main branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the repository
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Install dependencies
+      - name: Install Dependencies
+        run: npm install
+  
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+        # Checkout the repository
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+        # Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+        # Install dependencies
+      - name: Install Dependencies
+        run: npm install
+
+        # Run test
+      - name: Run tests
+        run: npm run test
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+        # Checkout the repository
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+        # Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+        # Install dependencies
+      - name: Install Dependencies
+        run: npm install
+
+
+      # Configure AWS credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # # Bootstrap the AWS CDK (if necessary)
+      # - name: Bootstrap CDK Environment
+      #   run: npx cdk bootstrap aws://$AWS_ACCOUNT_ID/eu-central-1
+
+      # Synthesize the CloudFormation template
+      - name: Synthesize CDK Template
+        run: |
+          npx cdk synth > cdk_output.yaml
+          echo "Synth output successful."
+
+      # Deploy the CDK stack
+      - name: Deploy CDK Stack
+        run: |
+          npx cdk deploy
+          echo "Deployed successfully."
