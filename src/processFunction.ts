@@ -27,7 +27,7 @@ export const handler = async (event: any) => {
                         S: v4(),
                     },
                     errorMessage: {
-                        S: "Something it wrong!",
+                        S: "Invalid JSON",
                     },
                     ttl: {
                         N: ttl.toString(),
